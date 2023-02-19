@@ -7,29 +7,31 @@ conducive to testing client model verification.
 from random import shuffle
 
 # External dependencies
+from keras.utils import to_categorical
 from keras.datasets.cifar10 import load_data
 
 class Dataset():
     """
     """
-    def __init__(self, n_good_clients: int,
+    def __init__(self, n_clients: int,
                  n_bad_clients: int) -> None:
         """
         Arguments:
-            n_good_clients: The number of clients that should
-                            have an untampered training set.
-            n_bad_clients:  The number of clients that should
-                            have a tampered training set.
+            n_clients:     The total number of clients.
+            n_bad_clients: The number of clients that should
+                           have a tampered training set.
         """
         # Load the data
         (x_train, y_train), (_, _) = load_data()
 
+        # One-hot encode the training labels
+        y_train = to_categorical(y_train)
+
         # Partition the data into as many
         # training sets as there are clients
-        n_clients = n_good_clients + n_bad_clients
-        client_dataset_size = len(x_train) // n_clients
         train_set_inputs = []
         train_set_outputs = []
+        client_dataset_size = len(x_train) // n_clients
         for i in range(n_clients):
             train_set_inputs.append(
                 x_train[i*client_dataset_size:(i+1)*client_dataset_size])
@@ -46,10 +48,3 @@ class Dataset():
         for i in range(n_clients):
             self.training_sets.append((
                 train_set_inputs[i], train_set_outputs[i]))
-
-def get_training_set(index: int):
-    """
-    """
-    # TODO: Need to figure out a way to make this dynamic within Flower.
-    dataset = Dataset(9, 1)
-    return dataset.training_sets[index]
