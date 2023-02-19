@@ -22,10 +22,17 @@ class Dataset():
                            have a tampered training set.
         """
         # Load the data
-        (x_train, y_train), (_, _) = load_data()
+        (x_train, y_train), (x_test, y_test) = load_data()
+
+        # Normalize the inputs
+        x_train = x_train.astype('float32')
+        x_test = x_test.astype('float32')
+        x_train = x_train / 255.0
+        x_test = x_test / 255.00
 
         # One-hot encode the training labels
         y_train = to_categorical(y_train)
+        y_test = to_categorical(y_test)
 
         # Partition the data into as many
         # training sets as there are clients
@@ -43,8 +50,11 @@ class Dataset():
         for i in range(n_bad_clients):
             shuffle(train_set_outputs[i])
 
-        # Collect and store the training sets
+        # Collect and store the training sets for the clients
         self.training_sets = []
         for i in range(n_clients):
             self.training_sets.append((
                 train_set_inputs[i], train_set_outputs[i]))
+
+        # Collect and store the test set for the server
+        self.test_set = (x_test, y_test)
