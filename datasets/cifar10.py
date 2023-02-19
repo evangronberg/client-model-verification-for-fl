@@ -10,7 +10,7 @@ from random import shuffle
 from keras.utils import to_categorical
 from keras.datasets.cifar10 import load_data
 
-class Dataset():
+class CIFAR10():
     """
     """
     def __init__(self, n_clients: int,
@@ -28,7 +28,7 @@ class Dataset():
         x_train = x_train.astype('float32')
         x_test = x_test.astype('float32')
         x_train = x_train / 255.0
-        x_test = x_test / 255.00
+        x_test = x_test / 255.0
 
         # One-hot encode the training labels
         y_train = to_categorical(y_train)

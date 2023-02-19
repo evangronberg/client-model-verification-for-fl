@@ -12,7 +12,8 @@ from flwr.simulation import start_simulation
 
 # Internal dependencies
 from client import Client
-from dataset import Dataset
+from models import get_model
+from datasets import get_dataset
 from client_model_verification import ClientModelVerification
 
 def run_simulation() -> None:
@@ -30,10 +31,17 @@ def run_simulation() -> None:
         client_fn=create_client,
         num_clients=n_clients,
         config=server_config,
-        strategy=strategy)
+        strategy=strategy
+    )
 
 def get_sim_config() -> Dict[str, int]:
     """
+    Gets the configuration for the simulation.
+
+    Arguments:
+        None
+    Return Values:
+        sim_config: The simulation configuration.
     """
     with open('sim_config.json') as sim_config_json:
         sim_config = json.load(sim_config_json)
@@ -42,13 +50,27 @@ def get_sim_config() -> Dict[str, int]:
 def create_client(client_id: str) -> Client:
     """
     Creates and returns a client object.
+
+    Arguments:
+        client_id: The sequence number of
+                   the client being created.
+    Return Values:
+        client:    The client.
     """
+    # Get the config data
     sim_config = get_sim_config()
     n_clients = sim_config['n_clients']
     n_bad_clients = sim_config['n_bad_clients']
+    dataset_name = sim_config['dataset']
 
-    dataset = Dataset(n_clients, n_bad_clients)
-    client = Client(training_set=dataset.training_sets[int(client_id)])
+    # Get the model and training set
+    model = get_model(dataset_name)
+    dataset = get_dataset(
+        dataset_name, n_clients, n_bad_clients)
+    training_set = dataset.training_sets[int(client_id)]
+
+    # Create and return the client
+    client = Client(model, training_set)
     return client
 
 if __name__ == '__main__':
