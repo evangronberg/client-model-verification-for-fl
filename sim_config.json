@@ -2,5 +2,5 @@
     "n_clients": 10,
     "n_bad_clients": 1,
     "n_rounds": 1,
-    "dataset": "cifar10"
+    "dataset": "mnist"
 }

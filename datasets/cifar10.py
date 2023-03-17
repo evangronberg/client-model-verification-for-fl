@@ -1,5 +1,5 @@
 """
-Module for loading the CIFAR-10 datase in a format
+Module for loading the CIFAR10 database in a format
 conducive to testing client model verification.
 """
 
@@ -12,6 +12,8 @@ from keras.datasets.cifar10 import load_data
 
 class CIFAR10():
     """
+    The CIFAR10 dataset formatted for
+    testing client model verification.
     """
     def __init__(self, n_clients: int,
                  n_bad_clients: int) -> None:

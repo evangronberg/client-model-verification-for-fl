@@ -15,10 +15,14 @@ from keras.activations import relu, softmax
 from keras.losses import categorical_crossentropy
 from keras.layers import Conv2D, Dropout, MaxPooling2D, Flatten, Dense
 
-def get_cifar10_cnn() -> None:
+def get_cifar10_cnn() -> Sequential:
     """
+    Gets a convolutional neural network compatible with CIFAR10.
+
     Arguments:
         None
+    Return Values:
+        model: A CIFAR10-compatible neural network.
     """
     model = Sequential([
         Conv2D(32, (3, 3), input_shape=(32, 32, 3),

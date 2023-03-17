@@ -1,4 +1,6 @@
 """
+Module for getting neural networks to test
+client modek verification for federated learning.
 """
 
 # External dependencies

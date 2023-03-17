@@ -1,4 +1,6 @@
 """
+Module for defining a basic neural
+network for use with the MNIST dataset.
 """
 
 # External dependencies
@@ -9,10 +11,14 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense
 from keras.losses import categorical_crossentropy
 
-def get_mnist_nn() -> None:
+def get_mnist_nn() -> Sequential:
     """
+    Gets an basic neural network compatible with MNIST.
+
     Arguments:
         None
+    Return Values:
+        model: An MNIST-compatible neural network.
     """
     model = Sequential([
         Flatten(input_shape=(28, 28)),

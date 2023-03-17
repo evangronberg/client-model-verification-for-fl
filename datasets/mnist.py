@@ -12,6 +12,8 @@ from keras.datasets.mnist import load_data
 
 class MNIST():
     """
+    The MNIST dataset formatted for
+    testing client model verification.
     """
     def __init__(self, n_clients: int,
                  n_bad_clients: int) -> None:
