@@ -28,17 +28,20 @@ class ClientModelVerification(Strategy):
     """
     def __init__(
         self,
-        dataset: str
+        dataset: str,
+        n_clients: int,
+        n_bad_clients: int
     ) -> None:
         """
         Arguments:
             dataset: The name of the dataset to be used.
         """
         super().__init__()
-        dataset = get_dataset(dataset)
+        self.model = get_model(dataset)
+        dataset = get_dataset(
+            dataset, n_clients, n_bad_clients)
         self.x_test = dataset.test_set[0]
         self.y_test = dataset.test_set[1]
-        self.model = get_model(dataset)
 
     def initialize_parameters(
         self, 
@@ -46,7 +49,9 @@ class ClientModelVerification(Strategy):
     ) -> Optional[Parameters]:
         """
         """
-        return self.model.get_weights()
+        parameters = self.model.get_weights()
+        parameters = ndarrays_to_parameters(parameters)
+        return parameters
 
     def configure_fit(
         self, 
@@ -90,7 +95,7 @@ class ClientModelVerification(Strategy):
         """
         # Collect references to all of the clients
         clients = client_manager.sample(
-                    client_manager.num_available())
+            client_manager.num_available())
 
         # Create the instructions (i.e., the
         # parameters) that each client will receive
@@ -151,6 +156,7 @@ class ClientModelVerification(Strategy):
     ) -> Optional[Tuple[float, Dict[str, Scalar]]]:
         """
         """
+        parameters = parameters_to_ndarrays(parameters)
         self.model.set_weights(parameters)
         loss, accuracy = self.model.evaluate(self.x_test, self.y_test)
         metrics = {'accuracy': accuracy}

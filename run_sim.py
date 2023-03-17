@@ -22,10 +22,12 @@ def run_simulation() -> None:
     """
     sim_config = get_sim_config()
     n_clients = sim_config['n_clients']
+    n_bad_clients = sim_config['n_bad_clients']
     n_rounds = sim_config['n_rounds']
     dataset = sim_config['dataset']
 
-    strategy = ClientModelVerification(dataset)
+    strategy = ClientModelVerification(
+        dataset, n_clients, n_bad_clients)
     server_config = ServerConfig(num_rounds=n_rounds)
 
     start_simulation(
