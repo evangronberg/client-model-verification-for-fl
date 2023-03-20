@@ -1,43 +1,55 @@
 """
-Module for loading the MNIST database in a format
-conducive to testing client model verification.
+Module for defining both the MNIST
+dataset and a compatiable neural network.
+
+Drawn from the official Keras documentation:
+https://keras.io/examples/vision/mnist_convnet/
 """
 
 # Python-native dependencies
 from random import shuffle
 
 # External dependencies
+from numpy import ndarray, expand_dims
 from keras.utils import to_categorical
 from keras.datasets.mnist import load_data
 
-class MNIST():
+# Internal dependencies
+from .base import CMVDataset
+
+class MNIST(CMVDataset):
     """
     The MNIST dataset formatted for
     testing client model verification.
-    """
-    def __init__(self, n_clients: int,
-                 n_bad_clients: int) -> None:
+    """ 
+    def __init__(self, n_clients: int, n_bad_clients: int) -> None:
         """
         Arguments:
             n_clients:     The total number of clients.
             n_bad_clients: The number of clients that should
                            have a tampered training set.
         """
+        super().__init__()
+
         # Load the data
-        (x_train, y_train), (x_test, y_test) = load_data()
+        dataset = load_data()
+        x_train : ndarray = dataset[0][0]
+        y_train : ndarray = dataset[0][1]
+        x_test : ndarray = dataset[1][0]
+        y_test : ndarray = dataset[1][1]
 
-        # Normalize the inputs
-        x_train = x_train.astype('float32')
-        x_test = x_test.astype('float32')
-        x_train = x_train / 255.0
-        x_test = x_test / 255.00
+        # Normalize all input to the [0, 1] range
+        x_train = x_train.astype('float32') / 255
+        x_test = x_test.astype('float32') / 255
 
-        # One-hot encode the training labels
-        y_train = to_categorical(y_train)
-        y_test = to_categorical(y_test)
+        # Shape each individual image to (28, 28, 1)
+        x_train = expand_dims(x_train, -1)
+        x_test = expand_dims(x_test, -1)
 
-        # Partition the data into as many
-        # training sets as there are clients
+        # One-hot encode the outputs
+        y_train = to_categorical(y_train, num_classes=10)
+        y_test = to_categorical(y_test, num_classes=10)
+
         train_set_inputs = []
         train_set_outputs = []
         client_dataset_size = len(x_train) // n_clients
@@ -47,16 +59,12 @@ class MNIST():
             train_set_outputs.append(
                 y_train[i*client_dataset_size:(i+1)*client_dataset_size])
 
-        # For each bad client, scramble one of
-        # the training partition's labels
         for i in range(n_bad_clients):
             shuffle(train_set_outputs[i])
 
-        # Collect and store the training sets for the clients
         self.training_sets = []
         for i in range(n_clients):
-            self.training_sets.append((
-                train_set_inputs[i], train_set_outputs[i]))
+            self.training_sets.append(
+                (train_set_inputs[i], train_set_outputs[i]))
 
-        # Collect and store the test set for the server
         self.test_set = (x_test, y_test)

@@ -28,7 +28,7 @@ class ClientModelVerification(Strategy):
     """
     def __init__(
         self,
-        dataset: str,
+        dataset_name: str,
         n_clients: int,
         n_bad_clients: int
     ) -> None:
@@ -37,9 +37,9 @@ class ClientModelVerification(Strategy):
             dataset: The name of the dataset to be used.
         """
         super().__init__()
-        self.model = get_model(dataset)
+        self.model = get_model(dataset_name)
         dataset = get_dataset(
-            dataset, n_clients, n_bad_clients)
+            dataset_name, n_clients, n_bad_clients)
         self.x_test = dataset.test_set[0]
         self.y_test = dataset.test_set[1]
 

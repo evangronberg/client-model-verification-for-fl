@@ -24,10 +24,10 @@ def run_simulation() -> None:
     n_clients = sim_config['n_clients']
     n_bad_clients = sim_config['n_bad_clients']
     n_rounds = sim_config['n_rounds']
-    dataset = sim_config['dataset']
+    dataset_name = sim_config['dataset']
 
     strategy = ClientModelVerification(
-        dataset, n_clients, n_bad_clients)
+        dataset_name, n_clients, n_bad_clients)
     server_config = ServerConfig(num_rounds=n_rounds)
 
     start_simulation(
@@ -65,6 +65,8 @@ def create_client(client_id: str) -> Client:
     n_clients = sim_config['n_clients']
     n_bad_clients = sim_config['n_bad_clients']
     dataset_name = sim_config['dataset']
+    n_client_epochs = sim_config['n_client_epochs']
+    client_batch_size = sim_config['client_batch_size']
 
     # Get the model and training set
     model = get_model(dataset_name)
@@ -73,7 +75,11 @@ def create_client(client_id: str) -> Client:
     training_set = dataset.training_sets[int(client_id)]
 
     # Create and return the client
-    client = Client(model, training_set)
+    client = Client(
+        model, training_set,
+        n_epochs=n_client_epochs,
+        batch_size=client_batch_size
+    )
     return client
 
 if __name__ == '__main__':

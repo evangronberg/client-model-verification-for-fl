@@ -2,5 +2,7 @@
     "n_clients": 10,
     "n_bad_clients": 1,
     "n_rounds": 1,
-    "dataset": "mnist"
+    "dataset": "mnist",
+    "n_client_epochs": 5,
+    "client_batch_size": 128
 }

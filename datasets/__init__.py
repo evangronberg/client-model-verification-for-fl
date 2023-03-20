@@ -1,26 +1,19 @@
 """
-Module for getting datasets to test client model
-verification for federated learning.
+Module for retrieving use cases
+to test client model verification.
 """
 
+# Internal dependencies
 from .mnist import MNIST
-from .cifar10 import CIFAR10
+from .base import CMVDataset
 
 def get_dataset(dataset_name: str, n_clients: int,
-                n_bad_clients: int):
+                n_bad_clients: int) -> CMVDataset:
     """
-    Gets the specified dataset, dividing it into n_clients partitions,
-    n_bad_clients of which will be scrambled to simulate malicious data.
+    """
+    dataset = None
 
-    Arguments:
-        TBA
-    Return Values:
-        dataset: The requested dataset divided
-                 into its requested partitions.
-    """
     if dataset_name == 'mnist':
         dataset = MNIST(n_clients, n_bad_clients)
-    if dataset_name == 'cifar10':
-        dataset = CIFAR10(n_clients, n_bad_clients)
 
     return dataset
