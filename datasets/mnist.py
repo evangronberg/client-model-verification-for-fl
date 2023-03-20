@@ -10,9 +10,9 @@ https://keras.io/examples/vision/mnist_convnet/
 from random import shuffle
 
 # External dependencies
-from numpy import ndarray, expand_dims
 from keras.utils import to_categorical
 from keras.datasets.mnist import load_data
+from numpy import ndarray, expand_dims, argmax, array
 
 # Internal dependencies
 from .base import CMVDataset
@@ -59,8 +59,18 @@ class MNIST(CMVDataset):
             train_set_outputs.append(
                 y_train[i*client_dataset_size:(i+1)*client_dataset_size])
 
+        scrambles = []
         for i in range(n_bad_clients):
-            shuffle(train_set_outputs[i])
+            scramble = [x for x in range(10)]
+            shuffle(scramble)
+            scrambles.append(scramble)
+
+        for i in range(n_bad_clients):
+            scrambled_train_set_outputs = []
+            for output in train_set_outputs[i]:
+                scrambled_train_set_outputs.append(to_categorical(
+                    scrambles[i][argmax(output)], num_classes=10))
+            train_set_outputs[i] = array(scrambled_train_set_outputs)
 
         self.training_sets = []
         for i in range(n_clients):
