@@ -12,12 +12,14 @@ from keras.models import Sequential
 from flwr.server.strategy import Strategy
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.client_manager import ClientManager
-from flwr.server.strategy.aggregate import weighted_loss_avg
+from flwr.server.strategy.aggregate import weighted_loss_avg, aggregate
 from flwr.common import (
     Parameters, Scalar,
     FitIns, FitRes, EvaluateIns, EvaluateRes,
     ndarrays_to_parameters, parameters_to_ndarrays
 )
+# from sklearn.metrics import pairwise_distances
+# from sklearn.covariance import EmpiricalCovariance
 
 # Internal dependencies
 from models import get_model
@@ -86,11 +88,13 @@ class ClientModelVerification(Strategy):
     ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
         """
         """
+        client_example_counts : List[int] = []
         client_model_params : List[List[np.ndarray]] =\
             [[] for _ in range(len(results))]
         for i, (_, result) in enumerate(results):
-            params = parameters_to_ndarrays(result.parameters)
-            client_model_params[i].append(params)
+            client_example_counts.append(result.num_examples)
+            client_model_params[i].append(
+                parameters_to_ndarrays(result.parameters))
 
         client_models : List[Sequential] = []
         for params in client_model_params:
@@ -98,10 +102,82 @@ class ClientModelVerification(Strategy):
             model.set_weights(params[0])
             client_models.append(model)
 
-        predictions : List[np.ndarray] = []
+        accuracies = []
         for model in client_models:
-            predictions.append(model.predict(self.x_test))
-        predictions = np.array(predictions)
+            _, accuracy = model.evaluate(self.x_test, self.y_test)
+            accuracies.append(accuracy)
+        accuracies = np.array(accuracies).reshape((len(accuracies), 1))
+
+        accuracy_z_scores = np.abs((accuracies - np.mean(
+            accuracies)) / np.std(accuracies))
+
+        bad_client_model_indices = []
+        total_client_examples = np.sum(client_example_counts)
+        for i, z_score in enumerate(accuracy_z_scores):
+            client_examples_proportion =\
+                client_example_counts[i] / total_client_examples
+            max_z_score = np.abs(np.log10(client_examples_proportion))
+            if z_score >= max_z_score:
+                bad_client_model_indices.append(i)
+
+        for i in bad_client_model_indices:
+            client_example_counts.pop(i)
+            client_model_params.pop(i)
+
+        parameters_aggregated = ndarrays_to_parameters(aggregate(
+            [(params[0], n_examples) for params, n_examples \
+            in zip(client_model_params, client_example_counts)]
+        ))
+
+        metrics_aggregated = {}
+
+        return parameters_aggregated, metrics_aggregated
+
+        # avg_accuracy = np.mean(accuracies)
+        # cov = EmpiricalCovariance().fit(accuracies).covariance_
+
+        # anomalous_models = []
+        # for i in range(accuracies.shape[0]):
+        #     mahalanobis_distance = pairwise_distances(accuracies[i], avg_accuracy, metric='mahalanobis', VI=np.linalg.inv(cov))
+        #     if mahalanobis_distance > 3:
+        #         anomalous_models.append(i)
+
+        # all_predictions = []
+        # for model in client_models:
+        #     all_predictions.append(model.predict(self.x_test))
+        # all_predictions = np.array(all_predictions)
+
+        # We get the average across all clients models to establish what
+        # the "average" client looks like in terms of per-example predictions
+        # distances = []
+        # avg_client = np.mean(all_predictions, axis=0)
+        # for client_predictions in all_predictions:
+        #     # Get the Mahanalobis distance from the average client for this client
+        #     client_distance = pairwise_distances(
+        #         client_predictions, avg_client,
+        #         metric='euclidean'
+        #     )
+        #     avg_dist = np.sum(client_distance) / client_distance.size
+        #     print(avg_dist)
+        #     distances.append(avg_dist)
+
+        # # We get the average across all clients models to establish what
+        # # the "average" client looks like in terms of per-example predictions
+        # distances = []
+        # avg_client = np.mean(all_predictions, axis=0)
+        # for client_predictions in all_predictions:
+        #     # Get the covariance of the current client
+        #     client_covariance = EmpiricalCovariance().fit(
+        #         avg_client).covariance_
+        #     # Get the Mahanalobis distance from the average client for this client
+        #     client_mahalanobis_distance = pairwise_distances(
+        #         client_predictions, avg_client,
+        #         metric='mahalanobis',
+        #         VI=np.linalg.inv(client_covariance)
+        #     )
+        #     avg_dist = np.sum(client_mahalanobis_distance) / client_mahalanobis_distance.size
+        #     print(avg_dist)
+        #     distances.append(avg_dist)
 
     def configure_evaluate(
         self,
