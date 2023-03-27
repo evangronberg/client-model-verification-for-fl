@@ -7,6 +7,8 @@ verification via Flower's Strategy class.
 from typing import Optional, Tuple, Union, Dict, List
 
 # External dependencies
+import numpy as np
+from keras.models import Sequential
 from flwr.server.strategy import Strategy
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.client_manager import ClientManager
@@ -37,6 +39,7 @@ class ClientModelVerification(Strategy):
             dataset: The name of the dataset to be used.
         """
         super().__init__()
+        self.dataset_name = dataset_name
         self.model = get_model(dataset_name)
         dataset = get_dataset(
             dataset_name, n_clients, n_bad_clients)
@@ -83,7 +86,22 @@ class ClientModelVerification(Strategy):
     ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
         """
         """
-        # TODO: This is where the magic will happen.
+        client_model_params : List[List[np.ndarray]] =\
+            [[] for _ in range(len(results))]
+        for i, (_, result) in enumerate(results):
+            params = parameters_to_ndarrays(result.parameters)
+            client_model_params[i].append(params)
+
+        client_models : List[Sequential] = []
+        for params in client_model_params:
+            model = get_model(self.dataset_name)
+            model.set_weights(params[0])
+            client_models.append(model)
+
+        predictions : List[np.ndarray] = []
+        for model in client_models:
+            predictions.append(model.predict(self.x_test))
+        predictions = np.array(predictions)
 
     def configure_evaluate(
         self,
