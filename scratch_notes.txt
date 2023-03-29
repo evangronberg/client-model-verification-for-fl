@@ -5,3 +5,5 @@ verification on just the predictions instead of the accuracy.
 Consider tuning the log base as a hyperparameter.
 Consider running experiments on the number of clients.
 Consider experimenting across multiple datasets/models.
+
+Create custom diagrams for FL and the verification test.
