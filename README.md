@@ -2,9 +2,7 @@
 
 A proof-of-concept for verifiying client models before incorporating them into a federated learning server's global model.
 
-Uses Flower, the friendly federated learning framework. Refer to this tutorial for learning how to implement Flower:
-
-https://flower.dev/docs/tutorial/Flower-1-Intro-to-FL-PyTorch.html
+Uses [Flower, the friendly federated learning framework](https://flower.dev).
 
 ## Installation
 
@@ -24,3 +22,5 @@ To run the program, first ensure that the virtual environment has been activated
 ```
 python run_sim.py
 ```
+
+For a full research paper covering this project, please see `paper.md`.
