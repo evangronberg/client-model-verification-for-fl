@@ -1,0 +1,6 @@
+Consider going back and figuring out a way to do
+verification on just the predictions instead of the accuracy.
+(A bonus is that this is label-agnostic.)
+
+Consider tuning the log base as a hyperparameter.
+Consider running experiments on the number of clients.
