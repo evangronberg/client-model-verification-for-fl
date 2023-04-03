@@ -5,17 +5,30 @@
 [To be added later.]
 
 1. [Introduction](#1-introduction)
+
 2. [Methods](#2-methods)
-   - [Example](#example) 
+
+   2.1. [Example](#21-example) 
+
 3. [Results](#3-results)
+
+   3.1. [CMV Performance with Bad Client Models](#31-cmv-performance-with-bad-client-models)
+
+   3.2. [Performance When Bad Client Models Pass CMV](#32-performance-when-bad-client-models-pass-cmv)
+
+   3.3. [CMV Performance over Number of Clients](#33-cmv-performance-over-number-of-clients)
+
 4. [Discussion](#4-discussion)
+
 5. [Conclusion](#5-conclusion)
 
 ## 1. Introduction
 
-Federated learning (FL) is an invaluable architecture for performing privacy-preserving machine learning with neural networks. The architecture assumes a one-to-many server-client relationship. The same neural network architecture is initialized on all parties. Each client trains a model using its local dataset. They then each push up their trained model to the server, along with the number of examples that were used to train the model. The server then performs a weighted aggregation of the client models. This process results in the global model, which leverages all of the data of all involved clients without revealing the clients' data to the server or to each other. This global model is then pushed out to all clients in the federation, concluding a round of training. The process then repeats.
+Federated learning (FL) is a valuable architecture for performing privacy-preserving machine learning with neural networks. The architecture has a one-to-many server-client relationship. The same neural network architecture is initialized on all parties. Each client trains a model using its local dataset. Each then pushes up its trained model to the server, along with the number of examples that were used to train the model. The server then performs a weighted aggregation of the client models. This process results in the global model, which leverages all of the data of all involved clients without revealing the clients' data to the server or to each other. This global model is then pushed out to all clients in the federation, concluding a round of training. The process then repeats.
 
-![Federated Learning Diagram](paper_images/fl_diagram.png)
+<p align='center'>
+  <img src='paper_images/fl_diagram.png' width='400'>
+</p>
 
 The utility of this architecture is clear: disparate parties are able to collaborate on machine learning models in a way that respects data privacy. However, there are still security risks. A plain FL architecture assumes that both the server and the clients are trustworthy enough to not tamper with the federated learning process.
 
@@ -25,13 +38,13 @@ Existing research addressing this problem focuses on the trustworthiness of the 
 
 For client model verification (CMV), a statistical method is proposed.
 
-The clients agree on a test set for the server to store locally. Before the server begins its weighted aggregation process, it evaluates each client model's accuracy on the test set. The accuracy of each model is then assigned a Z-score relative to the accuracy of every other model.
+The server is given a test sest to store locally. Before the server begins its weighted aggregation process, it evaluates each client model's accuracy on this test set. The accuracy of each model is then assigned a Z-score relative to the accuracy of all client models.
 
-We then calculate the "weight" of each model given how many training examples it proportionately contributed. We then take the absolute logarithm of these weights with the number of clients as its base. This logarithm, multiplied by the user-supplied average client standard deviation threshold, is used as the tolerance for the client model's Z-score. That is, if the accuracy of a given client model is separated by more than its tolerable Z-score, then the model is rejected. In other words, the more training examples a model is trained on, the more strict the verification criteria is for a given model.
+We then determine the "weight" of each model using the number of training examples it proportionately contributed. We then take the absolute logarithm of these weights with the number of clients as its base. This logarithm, multiplied by the user-supplied average client Z-score threshold, is used as the tolerance for that client model's Z-score. That is, if the accuracy of a given client model differs by more than its tolerable Z-score, then the model is rejected.
 
-> Note: It is reasonable that we trust clients to truthfully report the number of training examples their model was trained on. This is because a malicious client faces a tradeoff when they send a bad model. They could (1) report very few examples such that the statistical test is hardly strict at all, but then have very little influence on the global model or (2) report many examples in an attempt to have more impact on the model, but face a far stricter verification test.
+Put simply, the more examples a model is trained on, the more strict its verification criteria.
 
-Formally, the verification is as follows:
+Formally, CMV is defined as follows:
 
 $$
 \forall c \in C, V(c) = \text{pass if } | \frac{a_c - \mu_A}{\sigma_A} | < z_c \text{ else fail}
@@ -56,9 +69,7 @@ where
 - $s$ is the standard deviation threshold for the average client set by the user
   - This is a hyperparameter (and the *only* hyperparameter)
 
-It should be clear that this method requires a sufficient number of clients to work effectively, and that it only gets better with scale. Fortunately, real-world federated learning systems are typically deployed at scale.
-
-### Example
+### 2.1. Example
 
 Let's say there are 10 client models trained on a total of 100,000 examples. Suppose that the first client model was trained on 10,000 examples. Furthermore, suppose the user set the average client standard deviation threshold to 1. Thus,
 
@@ -78,9 +89,9 @@ All experiments below are run on the MNIST dataset using the example CNN provide
 
 https://keras.io/examples/vision/mnist_convnet/
 
-### 3.1. Effect of Bad Client Models
+### 3.1. CMV Performance with Bad Client Models
 
-To simulate malfunctioning or malicious client models, we will scramble a portion of the training labels in client datasets. We will evaluate the effect these malfunctioning/malicious clients have on performance over two variables:
+To simulate malfunctioning/malicious client models, we will scramble a portion of the training labels in client datasets. We will evaluate the effect these malfunctioning/malicious clients have on performance over two variables:
 
 1. The proportion of clients that are malfunctioning/malicious.
 2. The proportion of training labels that have been scrambled on a given client.
@@ -89,23 +100,29 @@ We will hold the number of total clients constant at 100. Furthermore, each of t
 
 Once we have run these experiments, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients.
 
-### 3.2. Effect of Bad Client Models Passing CMV
+### 3.2. Performance When Bad Client Models Pass CMV
 
-Malicious clients *can* circumvent CMV by (1) reporting few enough training examples such that the statistical test on the model is sufficiently lenient and (2) sending a model that is sufficiently accurate, but still performs purposefully below average. 
+Malicious clients *can* circumvent CMV by (1) reporting few enough training examples such that the statistical test on the model is sufficiently lenient and (2) sending a model that is sufficiently accurate, but still performs purposefully below average. However, we would like to be assured that the impact that this has on the global model's performance is minimal.
+
+It is worth noting that, should such impact be minimal, CMV provides sufficient protections for trusting clients to truthfully report the number of examples their models were trained on. This is because a malicious client faces a tradeoff when they send a bad model. They could (1) report very few examples such that the statistical test is hardly strict at all, but then have very little influence on the global model or (2) report many examples in an attempt to have more impact on the model, but face a far stricter verification test.
 
 Suppose that, in a group of $C$ clients, we have 1 client that decides to go rogue. We will determine two things about such a client:
 
 1. How bad of a model can the malicious send
 2. How poorly the performance of the global model is affected by this malicious model
 
-### 3.3. Tuning the Average Client Standard Deviation Threshold
+### 3.3. CMV Performance over Number of Clients
 
-### OR 
-
-### 3.3. Changing Number of Clients?
+It is clear that CMV requires a sufficient number of clients to work effectively. Without enough clients, CMV does not have a sufficient sample size for detecting outliers in the set of performance scores. However, we would like to determine *exactly* how many clients are required for CMV to be effective, as well as how much better CMV might perform the more clients are added.
 
 ## 4. Discussion
 
-Further work on this topic might include verifying that clients are sufficiently unbiased for use cases that are known to manifest bias (e.g., loan approval).
+Further work on this topic might include the following:
+
+- Performing CMV on client model predictions themselves rather than on performance scores.
+  - This has the benefit of being more granular and not requiring that the server's test set be labeled.
+- Verifying that clients are sufficiently unbiased for use cases that are known to manifest bias (e.g., loan approval).
+- Collecting historic performance to compare clients against.
+  - This could make CMV possible on what is currently too small a number of clients. 
 
 ## 5. Conclusion
