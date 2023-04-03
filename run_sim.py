@@ -22,20 +22,20 @@ def run_simulation() -> None:
     """
     sim_config = get_sim_config()
     n_clients = sim_config['n_clients']
-    n_bad_clients = sim_config['n_bad_clients']
     n_rounds = sim_config['n_rounds']
     dataset_name = sim_config['dataset']
+    avg_client_std_threshold =\
+        sim_config['avg_client_std_threshold']
 
     strategy = ClientModelVerification(
-        dataset_name, n_clients, n_bad_clients)
+        dataset_name, n_clients, avg_client_std_threshold)
     server_config = ServerConfig(num_rounds=n_rounds)
 
     start_simulation(
         client_fn=create_client,
         num_clients=n_clients,
         config=server_config,
-        strategy=strategy
-    )
+        strategy=strategy)
 
 def get_sim_config() -> Dict[str, int]:
     """

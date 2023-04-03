@@ -4,5 +4,6 @@
     "n_rounds": 1,
     "dataset": "mnist",
     "n_client_epochs": 5,
-    "client_batch_size": 128
+    "client_batch_size": 128,
+    "avg_client_std_threshold": 1.0
 }

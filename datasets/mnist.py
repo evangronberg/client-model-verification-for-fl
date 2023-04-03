@@ -22,7 +22,8 @@ class MNIST(CMVDataset):
     The MNIST dataset formatted for
     testing client model verification.
     """ 
-    def __init__(self, n_clients: int, n_bad_clients: int) -> None:
+    def __init__(self, n_clients: int,
+                 n_bad_clients: int = None) -> None:
         """
         Arguments:
             n_clients:     The total number of clients.
@@ -49,6 +50,13 @@ class MNIST(CMVDataset):
         # One-hot encode the outputs
         y_train = to_categorical(y_train, num_classes=10)
         y_test = to_categorical(y_test, num_classes=10)
+
+        self.test_set = (x_test, y_test)
+
+        # This is for when the server retrieves the test set
+        if n_bad_clients is None:
+            self.training_sets = []
+            return
 
         train_set_inputs = []
         train_set_outputs = []
@@ -77,4 +85,4 @@ class MNIST(CMVDataset):
             self.training_sets.append(
                 (train_set_inputs[i], train_set_outputs[i]))
 
-        self.test_set = (x_test, y_test)
+        

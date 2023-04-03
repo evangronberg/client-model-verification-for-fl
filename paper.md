@@ -25,11 +25,11 @@ Existing research addressing this problem focuses on the trustworthiness of the 
 
 ## 2. Methods
 
-To verify client models, a statistical method is proposed.
+For client model verification (CMV), a statistical method is proposed.
 
 The clients agree on a test set for the server to store locally. Before the server begins its weighted aggregation process, it evaluates each client model's accuracy on the test set. The accuracy of each model is then assigned a Z-score relative to the accuracy of every other model.
 
-We then calculate the "weight" of each model given how many training examples it proportionately contributed. We then take the absolute log base 10 of these weights. The absolute log base 10 is used as the tolerance for the client model's Z-score. That is, if the accuracy of a given client model is separate by more than its tolerable Z-score, then the model is rejected. In other words, the more training examples a model is trained on, the more strict the verification criteria is for a given model.
+We then calculate the "weight" of each model given how many training examples it proportionately contributed. We then take the absolute logarithm of these weights with the number of clients as its base. This logarithm, multiplied by the user-supplied average client standard deviation threshold, is used as the tolerance for the client model's Z-score. That is, if the accuracy of a given client model is separated by more than its tolerable Z-score, then the model is rejected. In other words, the more training examples a model is trained on, the more strict the verification criteria is for a given model.
 
 ![Standard Deviation Reference](paper_images/std_diagram.png)
 
@@ -53,18 +53,20 @@ where
 The set $Z$ is calculated as follows:
 
 $$
-Z = \{ \forall c \in C, z_c = |\text{ log}_{10} (\frac{n_c}{\sum n_i}) \text{ }| \} 
+Z = \{ \forall c \in C, z_c = |\text{ log}_{|C|} \frac{n_c}{\sum n_i} \text{ }| \cdot s \} 
 $$
 
 where
 
-- $N$ is the set of the number of training examples that were used to train each client
+- $N$ is the set of the numbers of training examples that were used to train each client
+- $s$ is the standard deviation threshold for the average client set by the user
+  - This is a hyperparameter (and the *only* hyperparameter)
 
 It should be clear that this method requires a sufficient number of clients to work effectively, and that it only gets better with scale. Fortunately, real-world federated learning systems are typically deployed at scale.
 
 ### Example
 
-Let's say there are 10 client models trained on a total of 100,000 examples. Suppose that the first client model was trained on 10,000 examples. Thus,
+Let's say there are 10 client models trained on a total of 100,000 examples. Suppose that the first client model was trained on 10,000 examples. Furthermore, suppose the user set the average client standard deviation threshold to 1. Thus,
 
 $$
 z_1 = | \text{ log}_{10} (\frac{10,000}{100,000}) \text{ } | = | \text{ log}_{10} (0.1) \text{ } | = | \text{ } -1 \text{ } | = 1
@@ -76,20 +78,36 @@ $$
 V(1) = | \frac{0.6 - 0.8}{0.1} | = | \frac{-0.2}{0.1} | = | -2 | = 2 \not < 1 \rightarrow \text{fail} 
 $$
 
-Notice that verification would fail for any accuracy 70% or below in this case. It makes intuitive sense that a model that would contribute 10% to the global model cannot have an accuracy 10% or more below the average.
-
 ## 3. Results
 
-Talk about datasets.
+All experiments below are run on the MNIST dataset using the example CNN provided in the Keras documentation:
 
-Need to quantify performance in experiments and establish metrics.
+https://keras.io/examples/vision/mnist_convnet/
 
-Need formal definition of experiments/results.
+### 3.1. Effect of Bad Client Models
 
-The results are given here as specified in the above section.
+To simulate malfunctioning or malicious client models, we will scramble a portion of the training labels in client datasets. We will evaluate the effect these malfunctioning/malicious clients have on performance over two variables:
 
-Need 2 or 3 results.
+1. The proportion of clients that are malfunctioning/malicious.
+2. The proportion of training labels that have been scrambled on a given client.
+
+We will hold the number of total clients constant at 100. Furthermore, each of these clients will possess 1% of the training data.
+
+Once we have run these experiments, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients.
+
+### 3.2. Effect of Bad Client Models Passing CMV
+
+Malicious clients *can* circumvent CMV by (1) reporting few enough training examples such that the statistical test on the model is sufficiently lenient and (2) sending a model that is sufficiently accurate, but still performs purposefully below average. 
+
+Suppose that, in a group of $C$ clients, we have 1 client that decides to go rogue. We will determine two things about such a client:
+
+1. How bad of a model can the malicious send
+2. How poorly the performance of the global model is affected by this malicious model
+
+### 3.3. Tuning the Average Client Standard Deviation Threshold
 
 ## 4. Discussion
+
+Further work on this topic might include verifying that clients are sufficiently unbiased for use cases that are known to manifest bias (e.g., loan approval).
 
 ## 5. Conclusion

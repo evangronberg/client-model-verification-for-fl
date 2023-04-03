@@ -34,7 +34,7 @@ class ClientModelVerification(Strategy):
         self,
         dataset_name: str,
         n_clients: int,
-        n_bad_clients: int
+        avg_client_std_threshold: float
     ) -> None:
         """
         Arguments:
@@ -43,10 +43,10 @@ class ClientModelVerification(Strategy):
         super().__init__()
         self.dataset_name = dataset_name
         self.model = get_model(dataset_name)
-        dataset = get_dataset(
-            dataset_name, n_clients, n_bad_clients)
+        dataset = get_dataset(dataset_name, n_clients)
         self.x_test = dataset.test_set[0]
         self.y_test = dataset.test_set[1]
+        self.avg_client_std_threshold = avg_client_std_threshold
 
     def initialize_parameters(
         self, 
@@ -109,7 +109,7 @@ class ClientModelVerification(Strategy):
         accuracies = np.array(accuracies).reshape((len(accuracies), 1))
 
         accuracy_z_scores = np.abs((accuracies - np.mean(
-            accuracies)) / np.std(accuracies))
+            accuracies)) / np.std(accuracies)) * self.avg_client_std_threshold
 
         bad_client_model_indices = []
         total_client_examples = np.sum(client_example_counts)
