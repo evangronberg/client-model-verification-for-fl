@@ -74,7 +74,7 @@ where
 Let's say there are 10 client models trained on a total of 100,000 examples. Suppose that the first client model was trained on 10,000 examples. Furthermore, suppose the user set the average client standard deviation threshold to 1. Thus,
 
 $$
-z_1 = | \text{ log}_{10} (\frac{10,000}{100,000}) \text{ } | = | \text{ log}_{10} (0.1) \text{ } | = | \text{ } -1 \text{ } | = 1
+z_1 = | \text{ log}_{10} \frac{10,000}{100,000} \text{ } | = | \text{ log}_{10} 0.1 \text{ } | = | \text{ } -1 \text{ } | = 1
 $$
 
 Now suppose that the accuracy of this model is 0.6, while the average accuracy every other client model is 0.8. Suppose also that the standard deviation of all the accuracies is 0.1. Thus,
