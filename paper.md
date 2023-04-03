@@ -15,9 +15,7 @@
 
 Federated learning (FL) is an invaluable architecture for performing privacy-preserving machine learning with neural networks. The architecture assumes a one-to-many server-client relationship. The same neural network architecture is initialized on all parties. Each client trains a model using its local dataset. They then each push up their trained model to the server, along with the number of examples that were used to train the model. The server then performs a weighted aggregation of the client models. This process results in the global model, which leverages all of the data of all involved clients without revealing the clients' data to the server or to each other. This global model is then pushed out to all clients in the federation, concluding a round of training. The process then repeats.
 
-![Federated Learning Diagram](paper_images/fl_diagram.jpg)
-
-*Need to replace this with a different diagram.*
+![Federated Learning Diagram](paper_images/fl_diagram.png)
 
 The utility of this architecture is clear: disparate parties are able to collaborate on machine learning models in a way that respects data privacy. However, there are still security risks. A plain FL architecture assumes that both the server and the clients are trustworthy enough to not tamper with the federated learning process.
 
@@ -30,10 +28,6 @@ For client model verification (CMV), a statistical method is proposed.
 The clients agree on a test set for the server to store locally. Before the server begins its weighted aggregation process, it evaluates each client model's accuracy on the test set. The accuracy of each model is then assigned a Z-score relative to the accuracy of every other model.
 
 We then calculate the "weight" of each model given how many training examples it proportionately contributed. We then take the absolute logarithm of these weights with the number of clients as its base. This logarithm, multiplied by the user-supplied average client standard deviation threshold, is used as the tolerance for the client model's Z-score. That is, if the accuracy of a given client model is separated by more than its tolerable Z-score, then the model is rejected. In other words, the more training examples a model is trained on, the more strict the verification criteria is for a given model.
-
-![Standard Deviation Reference](paper_images/std_diagram.png)
-
-*Need to contextualize this diagram.*
 
 > Note: It is reasonable that we trust clients to truthfully report the number of training examples their model was trained on. This is because a malicious client faces a tradeoff when they send a bad model. They could (1) report very few examples such that the statistical test is hardly strict at all, but then have very little influence on the global model or (2) report many examples in an attempt to have more impact on the model, but face a far stricter verification test.
 
@@ -105,6 +99,10 @@ Suppose that, in a group of $C$ clients, we have 1 client that decides to go rog
 2. How poorly the performance of the global model is affected by this malicious model
 
 ### 3.3. Tuning the Average Client Standard Deviation Threshold
+
+### OR 
+
+### 3.3. Changing Number of Clients?
 
 ## 4. Discussion
 
