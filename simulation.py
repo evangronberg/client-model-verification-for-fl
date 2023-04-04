@@ -16,11 +16,12 @@ from models import get_model
 from datasets import get_dataset
 from client_model_verification import ClientModelVerification
 
-def run_simulation() -> None:
+def run_simulation(sim_config: dict = None) -> None:
     """
     Simulates federated learning with client model verification.
     """
-    sim_config = get_sim_config()
+    if sim_config is None:
+        sim_config = get_sim_config()
     n_clients = sim_config['n_clients']
     n_rounds = sim_config['n_rounds']
     dataset_name = sim_config['dataset']
@@ -64,6 +65,7 @@ def create_client(client_id: str) -> Client:
     sim_config = get_sim_config()
     n_clients = sim_config['n_clients']
     n_bad_clients = sim_config['n_bad_clients']
+    n_scrambled_labels = sim_config['n_scrambled_labels']
     dataset_name = sim_config['dataset']
     n_client_epochs = sim_config['n_client_epochs']
     client_batch_size = sim_config['client_batch_size']
@@ -71,7 +73,8 @@ def create_client(client_id: str) -> Client:
     # Get the model and training set
     model = get_model(dataset_name)
     dataset = get_dataset(
-        dataset_name, n_clients, n_bad_clients)
+        dataset_name, n_clients,
+        n_bad_clients, n_scrambled_labels)
     training_set = dataset.training_sets[int(client_id)]
 
     # Create and return the client
@@ -83,4 +86,7 @@ def create_client(client_id: str) -> Client:
     return client
 
 if __name__ == '__main__':
-    run_simulation()
+    # run_simulation()
+    from datasets.mnist import MNIST
+    MNIST(n_clients=10, n_bad_clients=3, n_scrambled_labels=4)
+

@@ -1,6 +1,7 @@
 {
     "n_clients": 10,
     "n_bad_clients": 1,
+    "n_scrambled_labels": 4,
     "n_rounds": 1,
     "dataset": "mnist",
     "n_client_epochs": 5,

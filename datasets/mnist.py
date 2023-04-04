@@ -23,12 +23,15 @@ class MNIST(CMVDataset):
     testing client model verification.
     """ 
     def __init__(self, n_clients: int,
-                 n_bad_clients: int = None) -> None:
+                 n_bad_clients: int = None,
+                 n_scrambled_labels: int = None) -> None:
         """
         Arguments:
-            n_clients:     The total number of clients.
-            n_bad_clients: The number of clients that should
-                           have a tampered training set.
+            n_clients:          The total number of clients.
+            n_bad_clients:      The number of clients that should
+                                have a tampered training set.
+            n_scrambled_labels: The number of labels that should be
+                                scrambled for bad client training sets.
         """
         super().__init__()
 
@@ -69,8 +72,10 @@ class MNIST(CMVDataset):
 
         scrambles = []
         for i in range(n_bad_clients):
-            scramble = [x for x in range(10)]
+            scramble = [x for x in range(n_scrambled_labels)]
             shuffle(scramble)
+            for j in range(n_scrambled_labels, 10):
+                scramble.append(j)
             scrambles.append(scramble)
 
         for i in range(n_bad_clients):
@@ -84,5 +89,3 @@ class MNIST(CMVDataset):
         for i in range(n_clients):
             self.training_sets.append(
                 (train_set_inputs[i], train_set_outputs[i]))
-
-        

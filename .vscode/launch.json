@@ -5,7 +5,7 @@
             "name": "Debug Simulation",
             "type": "python",
             "request": "launch",
-            "program": "run_sim.py",
+            "program": "simulation.py",
             "console": "integratedTerminal",
             "justMyCode": false
         }
