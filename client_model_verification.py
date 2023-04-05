@@ -16,10 +16,7 @@ from flwr.server.strategy.aggregate import weighted_loss_avg, aggregate
 from flwr.common import (
     Parameters, Scalar,
     FitIns, FitRes, EvaluateIns, EvaluateRes,
-    ndarrays_to_parameters, parameters_to_ndarrays
-)
-# from sklearn.metrics import pairwise_distances
-# from sklearn.covariance import EmpiricalCovariance
+    ndarrays_to_parameters, parameters_to_ndarrays)
 
 # Internal dependencies
 from models import get_model
@@ -34,7 +31,8 @@ class ClientModelVerification(Strategy):
         self,
         dataset_name: str,
         n_clients: int,
-        avg_client_std_threshold: float
+        avg_client_std_threshold: float,
+        cmv_on: bool = True
     ) -> None:
         """
         Arguments:
@@ -47,6 +45,7 @@ class ClientModelVerification(Strategy):
         self.x_test = dataset.test_set[0]
         self.y_test = dataset.test_set[1]
         self.avg_client_std_threshold = avg_client_std_threshold
+        self.cmv_on = cmv_on
 
     def initialize_parameters(
         self, 
@@ -102,27 +101,33 @@ class ClientModelVerification(Strategy):
             model.set_weights(params[0])
             client_models.append(model)
 
-        accuracies = []
-        for model in client_models:
-            _, accuracy = model.evaluate(self.x_test, self.y_test)
-            accuracies.append(accuracy)
-        accuracies = np.array(accuracies).reshape((len(accuracies), 1))
+        if self.cmv_on: 
+            accuracies = []
+            for model in client_models:
+                _, accuracy = model.evaluate(self.x_test, self.y_test)
+                accuracies.append(accuracy)
+            accuracies = np.array(accuracies).reshape((len(accuracies), 1))
 
-        accuracy_z_scores = np.abs((accuracies - np.mean(
-            accuracies)) / np.std(accuracies)) * self.avg_client_std_threshold
+            accuracy_z_scores = np.abs((accuracies - np.mean(
+                accuracies)) / np.std(accuracies)) * self.avg_client_std_threshold
 
-        bad_client_model_indices = []
-        total_client_examples = np.sum(client_example_counts)
-        for i, z_score in enumerate(accuracy_z_scores):
-            client_examples_proportion =\
-                client_example_counts[i] / total_client_examples
-            max_z_score = np.abs(np.log10(client_examples_proportion))
-            if z_score >= max_z_score:
-                bad_client_model_indices.append(i)
+            bad_client_model_indices = []
+            total_client_examples = np.sum(client_example_counts)
+            for i, z_score in enumerate(accuracy_z_scores):
+                client_examples_proportion =\
+                    client_example_counts[i] / total_client_examples
+                max_z_score = np.abs(np.log10(client_examples_proportion))
+                if z_score >= max_z_score:
+                    bad_client_model_indices.append(i)
 
-        for i in bad_client_model_indices:
-            client_example_counts.pop(i)
-            client_model_params.pop(i)
+            client_example_counts = [
+                i for j, i in enumerate(client_example_counts) \
+                if j not in bad_client_model_indices
+            ]
+            client_model_params = [
+                i for j, i in enumerate(client_model_params) \
+                if j not in bad_client_model_indices
+            ]
 
         parameters_aggregated = ndarrays_to_parameters(aggregate(
             [(params[0], n_examples) for params, n_examples \

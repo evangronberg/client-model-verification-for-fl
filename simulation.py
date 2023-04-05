@@ -8,6 +8,7 @@ from typing import Dict
 
 # External dependencies
 from flwr.server import ServerConfig
+from flwr.server.history import History
 from flwr.simulation import start_simulation
 
 # Internal dependencies
@@ -16,27 +17,35 @@ from models import get_model
 from datasets import get_dataset
 from client_model_verification import ClientModelVerification
 
-def run_simulation(sim_config: dict = None) -> None:
+def run_simulation(sim_config: dict = None) -> History:
     """
     Simulates federated learning with client model verification.
     """
     if sim_config is None:
         sim_config = get_sim_config()
-    n_clients = sim_config['n_clients']
-    n_rounds = sim_config['n_rounds']
-    dataset_name = sim_config['dataset']
-    avg_client_std_threshold =\
+    else:
+        with open('sim_config.json', 'w') as sim_config_json:
+            json.dump(sim_config, sim_config_json)
+
+    cmv_on : bool = sim_config['cmv_on']
+    n_clients : int = sim_config['n_clients']
+    n_rounds : int = sim_config['n_rounds']
+    dataset_name :str = sim_config['dataset']
+    avg_client_std_threshold : float =\
         sim_config['avg_client_std_threshold']
 
-    strategy = ClientModelVerification(
-        dataset_name, n_clients, avg_client_std_threshold)
     server_config = ServerConfig(num_rounds=n_rounds)
+    strategy = ClientModelVerification(
+        dataset_name, n_clients,
+        avg_client_std_threshold, cmv_on)
 
-    start_simulation(
+    performance : History = start_simulation(
         client_fn=create_client,
         num_clients=n_clients,
         config=server_config,
-        strategy=strategy)
+        strategy=strategy
+    )
+    return performance
 
 def get_sim_config() -> Dict[str, int]:
     """
@@ -86,7 +95,6 @@ def create_client(client_id: str) -> Client:
     return client
 
 if __name__ == '__main__':
-    # run_simulation()
-    from datasets.mnist import MNIST
-    MNIST(n_clients=10, n_bad_clients=3, n_scrambled_labels=4)
-
+    performance = run_simulation()
+    print('\n\n\nFINAL ACCURACY FOR THIS RUN')    
+    print(performance.metrics_centralized['accuracy'][1][1])

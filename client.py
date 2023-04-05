@@ -62,3 +62,9 @@ class Client(NumPyClient):
         """
         TBA
         """
+        self.model.set_weights(parameters)
+
+        loss, accuracy = self.model.evaluate(
+            self.x_train, self.y_train)
+
+        return loss, len(self.x_train), {'accuracy': accuracy} 
