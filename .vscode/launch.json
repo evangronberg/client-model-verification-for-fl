@@ -8,6 +8,14 @@
             "program": "simulation.py",
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "Debug Result 1",
+            "type": "python",
+            "request": "launch",
+            "program": "result_1.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }

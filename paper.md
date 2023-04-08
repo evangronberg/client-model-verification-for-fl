@@ -91,14 +91,24 @@ https://keras.io/examples/vision/mnist_convnet/
 
 ### 3.1. CMV Performance with Bad Client Models
 
+#### **3.1.1 Experiment Design**
+
 To simulate malfunctioning/malicious client models, we will scramble a portion of the training labels in client datasets. We will evaluate the effect these malfunctioning/malicious clients have on performance over two variables:
 
 1. The proportion of clients that are malfunctioning/malicious.
 2. The proportion of training labels that have been scrambled on a given client.
 
-We will hold the number of total clients constant at 100. Furthermore, each of these clients will possess 1% of the training data.
+We will hold the number of total clients constant at 10, and each of these clients will possess 10% of the training data. When CMV is incorporated, the average client standard deviation threshold will be set to 1.
 
 Once we have run these experiments, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients.
+
+#### **3.1.2. Experiment Results**
+
+<p align='center'>
+  <img src='paper_images/accuracy_without_cmv.png' width='600'>
+</p>
+
+
 
 ### 3.2. Performance When Bad Client Models Pass CMV
 

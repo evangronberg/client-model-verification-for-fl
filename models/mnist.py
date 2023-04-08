@@ -7,6 +7,8 @@ https://keras.io/examples/vision/mnist_convnet/
 """
 
 # External dependencies
+import numpy as np
+import tensorflow as tf
 from keras import Input
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, Dense
@@ -15,6 +17,11 @@ def get_mnist_model() -> Sequential:
     """
     Creates an MNIST-compatible neural network.
     """
+    # For the sake of reproducability, we set the
+    # seeds used for weight initialization to constants
+    np.random.seed(1)
+    tf.random.set_seed(1)
+
     model = Sequential([
         Input(shape=(28, 28, 1)),
         Conv2D(32, kernel_size=(3, 3), activation='relu'),

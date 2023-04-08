@@ -138,52 +138,6 @@ class ClientModelVerification(Strategy):
 
         return parameters_aggregated, metrics_aggregated
 
-        # avg_accuracy = np.mean(accuracies)
-        # cov = EmpiricalCovariance().fit(accuracies).covariance_
-
-        # anomalous_models = []
-        # for i in range(accuracies.shape[0]):
-        #     mahalanobis_distance = pairwise_distances(accuracies[i], avg_accuracy, metric='mahalanobis', VI=np.linalg.inv(cov))
-        #     if mahalanobis_distance > 3:
-        #         anomalous_models.append(i)
-
-        # all_predictions = []
-        # for model in client_models:
-        #     all_predictions.append(model.predict(self.x_test))
-        # all_predictions = np.array(all_predictions)
-
-        # We get the average across all clients models to establish what
-        # the "average" client looks like in terms of per-example predictions
-        # distances = []
-        # avg_client = np.mean(all_predictions, axis=0)
-        # for client_predictions in all_predictions:
-        #     # Get the Mahanalobis distance from the average client for this client
-        #     client_distance = pairwise_distances(
-        #         client_predictions, avg_client,
-        #         metric='euclidean'
-        #     )
-        #     avg_dist = np.sum(client_distance) / client_distance.size
-        #     print(avg_dist)
-        #     distances.append(avg_dist)
-
-        # # We get the average across all clients models to establish what
-        # # the "average" client looks like in terms of per-example predictions
-        # distances = []
-        # avg_client = np.mean(all_predictions, axis=0)
-        # for client_predictions in all_predictions:
-        #     # Get the covariance of the current client
-        #     client_covariance = EmpiricalCovariance().fit(
-        #         avg_client).covariance_
-        #     # Get the Mahanalobis distance from the average client for this client
-        #     client_mahalanobis_distance = pairwise_distances(
-        #         client_predictions, avg_client,
-        #         metric='mahalanobis',
-        #         VI=np.linalg.inv(client_covariance)
-        #     )
-        #     avg_dist = np.sum(client_mahalanobis_distance) / client_mahalanobis_distance.size
-        #     print(avg_dist)
-        #     distances.append(avg_dist)
-
     def configure_evaluate(
         self,
         server_round: int,
