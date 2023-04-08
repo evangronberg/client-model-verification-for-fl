@@ -28,6 +28,7 @@ Federated learning (FL) is a valuable architecture for performing privacy-preser
 
 <p align='center'>
   <img src='paper_images/fl_diagram.png' width='400'>
+  <p align='center'>Figure 1: The Basic Architecture of Federated Learning</p>
 </p>
 
 The utility of this architecture is clear: disparate parties are able to collaborate on machine learning models in a way that respects data privacy. However, there are still security risks. A plain FL architecture assumes that both the server and the clients are trustworthy enough to not tamper with the federated learning process.
@@ -106,9 +107,13 @@ Once we have run these experiments, we will incorporate CMV and observe how well
 
 <p align='center'>
   <img src='paper_images/accuracy_without_cmv.png' width='600'>
+  <p align='center'>Figure 2: Accuracy over Number of Bad Clients with Different Levels of Scrambling without Client Model Verification</p>
 </p>
 
-
+<p align='center'>
+  <img src='paper_images/accuracy_with_cmv.png' width='600'>
+  <p align='center'>Figure 3: Accuracy over Number of Bad Clients with Different Levels of Scrambling with Client Model Verification</p>
+</p>
 
 ### 3.2. Performance When Bad Client Models Pass CMV
 
