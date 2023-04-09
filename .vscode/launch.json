@@ -16,6 +16,14 @@
             "program": "result_1.py",
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "Debug Result 2",
+            "type": "python",
+            "request": "launch",
+            "program": "result_2.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }

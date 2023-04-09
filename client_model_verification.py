@@ -46,6 +46,7 @@ class ClientModelVerification(Strategy):
         self.y_test = dataset.test_set[1]
         self.avg_client_std_threshold = avg_client_std_threshold
         self.cmv_on = cmv_on
+        self.n_clients_used = 0
 
     def initialize_parameters(
         self, 
@@ -108,15 +109,18 @@ class ClientModelVerification(Strategy):
                 accuracies.append(accuracy)
             accuracies = np.array(accuracies).reshape((len(accuracies), 1))
 
-            accuracy_z_scores = np.abs((accuracies - np.mean(
-                accuracies)) / np.std(accuracies)) * self.avg_client_std_threshold
+            accuracy_z_scores = np.round(np.abs((accuracies - np.mean(
+                accuracies)) / np.std(accuracies)), 2)
 
             bad_client_model_indices = []
             total_client_examples = np.sum(client_example_counts)
             for i, z_score in enumerate(accuracy_z_scores):
                 client_examples_proportion =\
                     client_example_counts[i] / total_client_examples
-                max_z_score = np.abs(np.log10(client_examples_proportion))
+                max_z_score = np.abs(
+                    np.log(client_examples_proportion) /\
+                    np.log(len(client_models))) *\
+                    self.avg_client_std_threshold
                 if z_score >= max_z_score:
                     bad_client_model_indices.append(i)
 
@@ -133,6 +137,7 @@ class ClientModelVerification(Strategy):
             [(params[0], n_examples) for params, n_examples \
             in zip(client_model_params, client_example_counts)]
         ))
+        self.n_clients_used = len(client_model_params)
 
         metrics_aggregated = {}
 
@@ -176,6 +181,8 @@ class ClientModelVerification(Strategy):
             [eval_res.num_examples for _, eval_res in results],
             [eval_res.metrics for _, eval_res in results]
         )
+        aggr_metrics['n_clients_used'] = self.n_clients_used
+
         return aggr_loss, aggr_metrics
 
     def aggregate_metrics(

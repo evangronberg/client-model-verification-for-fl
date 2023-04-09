@@ -48,7 +48,7 @@ Put simply, the more examples a model is trained on, the more strict its verific
 Formally, CMV is defined as follows:
 
 $$
-\forall c \in C, V(c) = \text{pass if } | \frac{a_c - \mu_A}{\sigma_A} | < z_c \text{ else fail}
+\forall c \in C, V(c) = \text{pass if round(} | \frac{a_c - \mu_A}{\sigma_A} | \text{, 2)} < z_c \text{ else fail}
 $$
 
 where
@@ -90,18 +90,20 @@ All experiments below are run on the MNIST dataset using the example CNN provide
 
 https://keras.io/examples/vision/mnist_convnet/
 
-### 3.1. CMV Performance with Bad Client Models
+The 60,000 training examples are divided equally among the 
+
+### 3.1. Comparative Performance of CMV with Bad Client Models
 
 #### **3.1.1 Experiment Design**
 
 To simulate malfunctioning/malicious client models, we will scramble a portion of the training labels in client datasets. We will evaluate the effect these malfunctioning/malicious clients have on performance over two variables:
 
-1. The proportion of clients that are malfunctioning/malicious.
-2. The proportion of training labels that have been scrambled on a given client.
+1. The number of clients that are malfunctioning/malicious.
+2. The number of training labels that have been scrambled on a given client.
 
-We will hold the number of total clients constant at 10, and each of these clients will possess 10% of the training data. When CMV is incorporated, the average client standard deviation threshold will be set to 1.
+We will hold the number of total clients constant at 10, and each of these clients will possess 10% of the training data.
 
-Once we have run these experiments, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients.
+Once we have run these experiments without CMV, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients. CMV's average client standard deviation threshold will be set to 1.0.
 
 #### **3.1.2. Experiment Results**
 
@@ -115,7 +117,10 @@ Once we have run these experiments, we will incorporate CMV and observe how well
   <p align='center'>Figure 3: Accuracy over Number of Bad Clients with Different Levels of Scrambling with Client Model Verification</p>
 </p>
 
+<!--
 ### 3.2. Performance When Bad Client Models Pass CMV
+
+GET RID OF THIS RESULT AND JUST DISCUSS IT IN RELATION TO RESULT 1 IN THE DISCUSSION SECTION.
 
 Malicious clients *can* circumvent CMV by (1) reporting few enough training examples such that the statistical test on the model is sufficiently lenient and (2) sending a model that is sufficiently accurate, but still performs purposefully below average. However, we would like to be assured that the impact that this has on the global model's performance is minimal.
 
@@ -125,10 +130,21 @@ Suppose that, in a group of $C$ clients, we have 1 client that decides to go rog
 
 1. How bad of a model can the malicious send
 2. How poorly the performance of the global model is affected by this malicious model
+-->
 
-### 3.3. CMV Performance over Number of Clients
+### 3.2. Minimum Number of Clients for Detecting Different Numbers of Bad Clients
 
-It is clear that CMV requires a sufficient number of clients to work effectively. Without enough clients, CMV does not have a sufficient sample size for detecting outliers in the set of performance scores. However, we would like to determine *exactly* how many clients are required for CMV to be effective, as well as how much better CMV might perform the more clients are added.
+#### **3.2.1. Experiment Design**
+
+The more bad clients there are in a given round, the more the distribution of accuracy scores will be skewed toward bad clients. Thus, the more bad clients there are in a given round, the more good clients there must be to skew the distribution "back" toward effectiveness.
+
+We would thus like to determine how many total clients there must be in a federation to detect a given number of bad clients. For this experiment, we will vary the average client standard deviation threshold. Our graph will display one line for each threshold tested. Each line will be plotted as the number of bad clients over the total number of required clients to detect the bad clients.
+
+#### **3.2.2. Experiment Results**
+
+
+
+> Note: A separate test was run to verify that 3 clients are required to detect 1 bad client regardless of how much scrambling has taken place on the bad client. This test is included in the project's GitHub repository and may be replicated there.
 
 ## 4. Discussion
 
