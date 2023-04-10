@@ -24,7 +24,7 @@ def run_experiment() -> None:
     stds = [x * 0.25 for x in range(2, 9)]
 
     n_bad_clients_curves = []
-    for n_bad_clients in range(1, 6):
+    for n_bad_clients in range(1, 4):
         n_bad_clients_curve = []
         for std in stds:
             n_clients = (n_bad_clients * 2) + 1
@@ -61,7 +61,7 @@ def run_experiment() -> None:
         print(f'\n\nCURVE FOR {n_bad_clients} BAD CLIENTS FINISHED\n\n')
 
     for n_bad_clients_curve, n_bad_clients in \
-        zip(n_bad_clients_curves, list(range(1, 6))):
+        zip(n_bad_clients_curves, list(range(1, 4))):
         plt.plot(stds, n_bad_clients_curve,
                  label=f'{n_bad_clients}')
     plt.xlabel('Avg. Client STD Threshold')

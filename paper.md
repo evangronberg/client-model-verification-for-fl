@@ -90,7 +90,7 @@ All experiments below are run on the MNIST dataset using the example CNN provide
 
 https://keras.io/examples/vision/mnist_convnet/
 
-The 60,000 training examples are divided equally among the 
+The 60,000 training examples are divided equally among the clients, and each client trains 5 epochs with a batch size of 128.
 
 ### 3.1. Comparative Performance of CMV with Bad Client Models
 
@@ -101,7 +101,7 @@ To simulate malfunctioning/malicious client models, we will scramble a portion o
 1. The number of clients that are malfunctioning/malicious.
 2. The number of training labels that have been scrambled on a given client.
 
-We will hold the number of total clients constant at 10, and each of these clients will possess 10% of the training data.
+We will hold the number of total clients constant at 10.
 
 Once we have run these experiments without CMV, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients. CMV's average client standard deviation threshold will be set to 1.0.
 
@@ -117,43 +117,47 @@ Once we have run these experiments without CMV, we will incorporate CMV and obse
   <p align='center'>Figure 3: Accuracy over Number of Bad Clients with Different Levels of Scrambling with Client Model Verification</p>
 </p>
 
-<!--
-### 3.2. Performance When Bad Client Models Pass CMV
-
-GET RID OF THIS RESULT AND JUST DISCUSS IT IN RELATION TO RESULT 1 IN THE DISCUSSION SECTION.
-
-Malicious clients *can* circumvent CMV by (1) reporting few enough training examples such that the statistical test on the model is sufficiently lenient and (2) sending a model that is sufficiently accurate, but still performs purposefully below average. However, we would like to be assured that the impact that this has on the global model's performance is minimal.
-
-It is worth noting that, should such impact be minimal, CMV provides sufficient protections for trusting clients to truthfully report the number of examples their models were trained on. This is because a malicious client faces a tradeoff when they send a bad model. They could (1) report very few examples such that the statistical test is hardly strict at all, but then have very little influence on the global model or (2) report many examples in an attempt to have more impact on the model, but face a far stricter verification test.
-
-Suppose that, in a group of $C$ clients, we have 1 client that decides to go rogue. We will determine two things about such a client:
-
-1. How bad of a model can the malicious send
-2. How poorly the performance of the global model is affected by this malicious model
--->
-
 ### 3.2. Minimum Number of Clients for Detecting Different Numbers of Bad Clients
 
-#### **3.2.1. Experiment Design**
+#### 3.2.1. Experiment Design
 
 The more bad clients there are in a given round, the more the distribution of accuracy scores will be skewed toward bad clients. Thus, the more bad clients there are in a given round, the more good clients there must be to skew the distribution "back" toward effectiveness.
 
-We would thus like to determine how many total clients there must be in a federation to detect a given number of bad clients. For this experiment, we will vary the average client standard deviation threshold. Our graph will display one line for each threshold tested. Each line will be plotted as the number of bad clients over the total number of required clients to detect the bad clients.
+We would thus like to determine how many total clients there must be in a federation to detect a given number of bad clients, where each bad client is half-scrambled. For this experiment, we will vary the average client standard deviation threshold, and there will be one line for each number of bad clients that we will test (1, 2, and 3). Each line will thus be plotted as the number of clients over the average client standard deviation threshold.
 
-#### **3.2.2. Experiment Results**
+#### 3.2.2. Experiment Results
 
-
+<p align='center'>
+  <img src='paper_images/min_client_counts.png' width='600'>
+  <p align='center'>Figure 4: Number of Clients Required to Detect Bad Clients</p>
+</p>
 
 > Note: A separate test was run to verify that 3 clients are required to detect 1 bad client regardless of how much scrambling has taken place on the bad client. This test is included in the project's GitHub repository and may be replicated there.
 
 ## 4. Discussion
 
+### 4.1. Result 1
+
+Result 1 demonstrates that, until the number of bad clients equals or exceeds the number of good clients, CMV is *very* effective at detecting and excluding the bad clients. In Figure 2, we see that performance begins to quickly degrade at 3 bad clients. In Figure 3, though, performance is maintained very well until the bad clients win equality or majority.
+
+Once the number of bad clients equals or exceeds the number of good clients, CMV performance completely degrades, because it then excludes *good* clients. However, at this point, it is no longer reasonable to expect it to detect truly bad clients due to the "majority vote" nature of the test.
+
+### 4.2. Result 2
+
+Result 2 demonstrates an interesting trend. A lower average client standard deviation threshold actually requires *more* total clients to detect bad clients than when using the default of 1.0. This is not so that bad clients may be *excluded*, but so that good clients may be *included*. If there are not sufficient good clients to form a sufficiently "tight" distribution, then most (or even all) clients, don't fall within standard deviations that are close enough to each other.
+
+The minimum number of clients for effective detection comes at the default
+value of 1.0.
+
+Once we increase from 1.0, then the number of clients required for bad client detection increases again. This is because, again, a sufficiently "tight" distribution must be formed. This time, though, it must be sufficiently tight such that bad clients are quite distant from the center of the distribution – good clients will certainly be included, but there has to be sufficient "consensus" among them to flag bad clients as exceedingly "far away."
+
+### 4.3. Future Work
+
 Further work on this topic might include the following:
 
 - Performing CMV on client model predictions themselves rather than on performance scores.
-  - This has the benefit of being more granular and not requiring that the server's test set be labeled.
+  - This has the benefit of exposing CMV to more data overall, and it also does not require that the server's test set be labeled.
 - Verifying that clients are sufficiently unbiased for use cases that are known to manifest bias (e.g., loan approval).
-- Collecting historic performance to compare clients against.
-  - This could make CMV possible on what is currently too small a number of clients. 
+- Collecting historic performance for CMV to compare clients against. 
 
 ## 5. Conclusion

@@ -1,1 +1,1 @@
-{"cmv_on": true, "n_clients": 6, "n_bad_clients": 1, "n_scrambled_labels": 5, "n_rounds": 1, "dataset": "mnist", "n_client_epochs": 5, "client_batch_size": 128, "avg_client_std_threshold": 0.5}
+{"cmv_on": true, "n_clients": 21, "n_bad_clients": 3, "n_scrambled_labels": 5, "n_rounds": 1, "dataset": "mnist", "n_client_epochs": 5, "client_batch_size": 128, "avg_client_std_threshold": 2.0}
