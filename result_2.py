@@ -14,8 +14,6 @@ def run_experiment() -> None:
     """
     Produces the graphs found in section 3.2.2 of the paper.
 
-    On the author's processor (M1 Pro), this experiment takes ? hours.
-
     Arguments:
         None
     Return Values:
@@ -72,54 +70,53 @@ def run_experiment() -> None:
     plt.title('Minimum Client Counts Required for CMV')
     plt.savefig('paper_images/min_client_counts.png', dpi=300)
 
-# def run_experiment() -> None:
-#     """
-#     Produces the graphs found in section 3.2.2 of the paper.
+def single_bad_client_detection() -> None:
+    """
+    Verifies that 3 clients are required to detect 1 bad client
+    regardless of how much scrambling has take place on the bad client.
 
-#     On the author's processor (M1 Pro), this experiment takes ? hours.
+    Arguments:
+        None
+    Return Values:
+        None
+    """
+    results = []
+    for n_scrambled_labels in range(2, 11):
+        n_clients = 2
+        min_n_clients = 0
+        while not min_n_clients:
+            try:
+                performance : History = run_simulation(sim_config={
+                    'cmv_on': True,
+                    'n_clients': n_clients,
+                    'n_bad_clients': 1,
+                    'n_scrambled_labels': n_scrambled_labels,
+                    'n_rounds': 1,
+                    'dataset': 'mnist',
+                    'n_client_epochs': 5,
+                    'client_batch_size': 128,
+                    'avg_client_std_threshold': 1.0
+                })
+                if performance.metrics_distributed[
+                    'n_clients_used'][0][1] == (n_clients - 1):
+                    min_n_clients = n_clients
+                elif performance.metrics_distributed[
+                    'n_clients_used'][0][1] < (n_clients - 1):
+                    results.append(f'TOO MANY MODELS REJECTED WHEN ATTEMPTING TO DETECT 1 BAD CLIENT WITH {n_scrambled_labels}/10 SCRAMBLED LABELS AMONG {n_clients} CLIENTS ({n_clients - performance.metrics_distributed["n_clients_used"][0][1]})')
+                    continue
+                else:
+                    n_clients += 1
+                    continue
+            # This is for the case that Flower fails
+            # because all models were rejected
+            except:
+                n_clients += 1
+                continue
+            print(f'\n\nMIN # OF CLIENTS TO DETECT 1 BAD CLIENT WITH {n_scrambled_labels}/10 SCRAMBLED LABELS: {min_n_clients}\n\n')
+            results.append(f'MIN # OF CLIENTS TO DETECT 1 BAD CLIENT WITH {n_scrambled_labels}/10 SCRAMBLED LABELS: {min_n_clients}')
 
-#     Arguments:
-#         None
-#     Return Values:
-#         None
-#     """
-#     results = []
-#     for n_scrambled_labels in range(2, 11):
-#         n_clients = 2
-#         min_n_clients = 0
-#         while not min_n_clients:
-#             try:
-#                 performance : History = run_simulation(sim_config={
-#                     'cmv_on': True,
-#                     'n_clients': n_clients,
-#                     'n_bad_clients': 1,
-#                     'n_scrambled_labels': n_scrambled_labels,
-#                     'n_rounds': 1,
-#                     'dataset': 'mnist',
-#                     'n_client_epochs': 5,
-#                     'client_batch_size': 128,
-#                     'avg_client_std_threshold': 1.0
-#                 })
-#                 if performance.metrics_distributed[
-#                     'n_clients_used'][0][1] == (n_clients - 1):
-#                     min_n_clients = n_clients
-#                 elif performance.metrics_distributed[
-#                     'n_clients_used'][0][1] < (n_clients - 1):
-#                     results.append(f'TOO MANY MODELS REJECTED WHEN ATTEMPTING TO DETECT 1 BAD CLIENT WITH {n_scrambled_labels}/10 SCRAMBLED LABELS AMONG {n_clients} CLIENTS ({n_clients - performance.metrics_distributed["n_clients_used"][0][1]})')
-#                     continue
-#                 else:
-#                     n_clients += 1
-#                     continue
-#             # This is for the case that Flower fails
-#             # because all models were rejected
-#             except:
-#                 n_clients += 1
-#                 continue
-#             print(f'\n\nMIN # OF CLIENTS TO DETECT 1 BAD CLIENT WITH {n_scrambled_labels}/10 SCRAMBLED LABELS: {min_n_clients}\n\n')
-#             results.append(f'MIN # OF CLIENTS TO DETECT 1 BAD CLIENT WITH {n_scrambled_labels}/10 SCRAMBLED LABELS: {min_n_clients}')
-
-#     for result in results:
-#         print(result)
+    for result in results:
+        print(result)
 
 if __name__ == '__main__':
     # This prevents matplotlib from producing pop-ups

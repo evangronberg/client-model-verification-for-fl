@@ -2,7 +2,7 @@
 
 ### Abstract
 
-[To be added later.]
+Federated learning (FL) is a valuable architecture for allowing disparate parties to collaborate on machine learning models while keeping their respective datasets completely private and local. However, FL does have security flaws and is certainly not a zero-trust architecture. In particular, a plain FL architecture requires that we trust clients not to submit flawed models, whether those models be flawed intentionally or unintentionally. What is proposed here, then, is a method of verifying the performance of client models before aggregating them into the global model used by everyone. This method, called client model verification (CMV), is a statistical test for detecting outlier client models whose aberrant performance flags and excludes them from the global model.
 
 1. [Introduction](#1-introduction)
 
@@ -12,15 +12,21 @@
 
 3. [Results](#3-results)
 
-   3.1. [CMV Performance with Bad Client Models](#31-cmv-performance-with-bad-client-models)
+   3.1. [Comparative Performance of CMV with Bad Client Models](#31-comparative-performance-of-cmv-with-bad-client-models)
 
-   3.2. [Performance When Bad Client Models Pass CMV](#32-performance-when-bad-client-models-pass-cmv)
-
-   3.3. [CMV Performance over Number of Clients](#33-cmv-performance-over-number-of-clients)
+   3.2. [Minimum Number of Clients for Detecting Different Numbers of Bad Clients](#32-minimum-number-of-clients-for-detecting-different-numbers-of-bad-clients)
 
 4. [Discussion](#4-discussion)
 
+   4.1. [Result 1](#41-result-1)
+
+   4.2. [Result 2](#42-result-2)
+
+   4.3. [Future Work](#43-future-work)
+
 5. [Conclusion](#5-conclusion)
+
+6. [References](#6-references)
 
 ## 1. Introduction
 
@@ -94,7 +100,7 @@ The 60,000 training examples are divided equally among the clients, and each cli
 
 ### 3.1. Comparative Performance of CMV with Bad Client Models
 
-#### **3.1.1 Experiment Design**
+#### 3.1.1 Experiment Design
 
 To simulate malfunctioning/malicious client models, we will scramble a portion of the training labels in client datasets. We will evaluate the effect these malfunctioning/malicious clients have on performance over two variables:
 
@@ -105,7 +111,7 @@ We will hold the number of total clients constant at 10.
 
 Once we have run these experiments without CMV, we will incorporate CMV and observe how well it preserves performance against malfunctioning/malicious clients. CMV's average client standard deviation threshold will be set to 1.0.
 
-#### **3.1.2. Experiment Results**
+#### 3.1.2. Experiment Results
 
 <p align='center'>
   <img src='paper_images/accuracy_without_cmv.png' width='600'>
@@ -132,7 +138,7 @@ We would thus like to determine how many total clients there must be in a federa
   <p align='center'>Figure 4: Number of Clients Required to Detect Bad Clients</p>
 </p>
 
-> Note: A separate test was run to verify that 3 clients are required to detect 1 bad client regardless of how much scrambling has taken place on the bad client. This test is included in the project's GitHub repository and may be replicated there.
+> Note: A separate test was run to verify that 3 clients are required to detect 1 bad client regardless of how much scrambling has taken place on the bad client. This test is included in the project's GitHub repository (see `result_2.py`) and may be replicated there.
 
 ## 4. Discussion
 
@@ -161,3 +167,9 @@ Further work on this topic might include the following:
 - Collecting historic performance for CMV to compare clients against. 
 
 ## 5. Conclusion
+
+CMV proves to be a simple yet effective way to mitigate the impact of malfunctioning or malicious clients in a federated learning setting. Perhaps the most surprising result, though, is that, for a single round of training, whether or not we discard bad client models really only matters once there are multiple bad clients. The effect that one bad client has on performance is small. However, in the real world, a single malicious client would likely attempt to contribute bad models across multiple rounds of training, which would gradually reduce performance to a noticeably poor level. Fortunately, this is exactly what CMV prevents and what makes CMV quite useful.  
+
+## 6. References
+
+
